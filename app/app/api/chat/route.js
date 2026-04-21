@@ -1,35 +1,34 @@
+mport OpenAI from "openai";
+
 export async function POST(req) {
   try {
-    const { message } = await req.json()
+    const { message } = await req.json();
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "Tu es Kuro AI, une IA intelligente, claire et puissante."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ]
-      })
-    })
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
-    const data = await response.json()
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "user", content: message },
+      ],
+    });
 
-    return Response.json({
-      reply: data.choices?.[0]?.message?.content || "Erreur"
-    })
-
+    return new Response(
+      JSON.stringify({
+        reply: completion.choices[0].message.content,
+      }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    return Response.json({ reply: "Erreur serveur" })
+    console.error(error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Erreur API",
+      }),
+      { status: 500 }
+    );
   }
 }
