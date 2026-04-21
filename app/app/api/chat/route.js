@@ -1,4 +1,4 @@
-mport OpenAI from "openai";
+import OpenAI from "openai";
 
 export async function POST(req) {
   try {
